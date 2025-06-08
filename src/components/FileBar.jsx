@@ -1,8 +1,8 @@
 // components/FileBar.jsx
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { languageOptions } from "./constant"; // Assuming languageOptions is defined here
-import { useTheme } from "../hooks/ThemeContext";
+import { languageOptions } from "../utils/constant.js"; // Assuming languageOptions is defined here
+import { useTheme } from "../context/ThemeContext";
 
 import { FiPlus, FiPlay, FiChevronDown } from "react-icons/fi";
 
@@ -52,12 +52,12 @@ const FileBar = ({
 
   return (
     <nav
-      className="fixed top-[20px] md:top-[40px] left-0 w-full h-[50px] md:h-[50px] flex items-center justify-between px-2 md:px-4 z-40 shadow-xl border-b
+      className=" w-full h-[50px] md:h-[50px] flex items-center justify-between py-2 px-2 md:px-4 z-40 shadow-xl border-b
                      bg-light-background-secondary text-light-text-primary border-light-border-primary
                      dark:bg-dark-background-secondary dark:text-dark-text-primary dark:border-dark-border-primary"
     >
       {/* File Tabs Section */}
-      <div className="flex flex-grow overflow-x-auto whitespace-nowrap custom-scrollbar-hide pr-2 md:pr-4">
+      <div className="flex flex-grow overflow-x-auto overflow-hidden whitespace-nowrap custom-scrollbar pr-2 md:pr-4">
         <AnimatePresence mode="popLayout">
           {openFiles.map((file) => (
             <motion.button
@@ -135,7 +135,7 @@ const FileBar = ({
           onClick={onRunCode}
           disabled={isLoading}
           className={`
-            px-3 py-1 md:px-5 md:py-2 rounded-md font-semibold text-xs md:text-base transition-all duration-200 focus:outline-none focus:ring-2 shadow-md hover:shadow-lg flex items-center gap-1 bg-light-accent-green text-light-text-primary hover:bg-light-accent-green/80 focus:ring-light-accent-green focus:ring-opacity-70 hover:shadow-light-accent-green/40
+            px-3 py-1 md:px-5 md:py-1.5 rounded-md font-semibold text-xs md:text-base transition-all duration-200 focus:outline-none focus:ring-2 shadow-md hover:shadow-lg flex items-center gap-1 bg-light-accent-green text-light-text-primary hover:bg-light-accent-green/80 focus:ring-light-accent-green focus:ring-opacity-70 hover:shadow-light-accent-green/40
             dark:bg-dark-accent-green dark:text-dark-text-primary dark:hover:bg-dark-accent-green/80 dark:focus:ring-dark-accent-green dark:focus:ring-opacity-70 dark:hover:shadow-dark-accent-green/40  
             ${isLoading ? "opacity-60 cursor-not-allowed" : ""}
             `}

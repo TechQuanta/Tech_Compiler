@@ -1,8 +1,8 @@
 // src/components/Output.jsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import useMediaQuery from '../hooks/MediaQuery'; // Import the hook
-import { useTheme } from '../hooks/ThemeContext'; // Import useTheme hook
+import useMediaQuery from '../hooks/mediaQuery'; // Import the hook
+import { useTheme } from '../context/ThemeContext'; // Import useTheme hook
 
 // Define dimensions for the output card on larger screens
 const OUTPUT_CARD_WIDTH = '400px';

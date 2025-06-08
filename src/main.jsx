@@ -2,7 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App'; // Assuming CodeEditor is your main component
-import { ThemeProvider } from './hooks/ThemeContext'; // Import ThemeProvider
+import { ThemeProvider } from './context/ThemeContext'; // Import ThemeProvider
 import './index.css'; // Your global Tailwind CSS file
 
 ReactDOM.createRoot(document.getElementById('root')).render(

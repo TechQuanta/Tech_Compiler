@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "types": "module",
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "axios": "^1.9.0",

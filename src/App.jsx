@@ -1,4 +1,4 @@
-import CompilerLandingPage from "./components/CompilerLandingPage";
+import CompilerLandingPage from "./pages/CompilerLandingPage";
 
 function App() {
   return (

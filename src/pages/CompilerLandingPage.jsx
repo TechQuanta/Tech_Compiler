@@ -2,13 +2,13 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import TopBar from "../components/TopBar";
 import FileBar from "../components/FileBar";
-import { executeCode } from "./api";
+import { executeCode } from "../utils/api.js";
 import Output from "../components/Output";
 
-import { CODE_SNIPPETS } from "./constant";
+import { CODE_SNIPPETS } from "../utils/constant";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import useKeyPress from "../hooks/keyPress";
-import { useTheme } from "../hooks/ThemeContext"; // Import useTheme hook
+import { useTheme } from "../context/ThemeContext"; // Import useTheme hook
 
 const TOP_BAR_HEIGHT = 40; // px
 const FILE_BAR_HEIGHT = 50; // px
@@ -35,7 +35,7 @@ const CodeEditor = () => {
     activeFile?.language || "javascript"
   );
   const [version, setVersion] = useState("");
-  const [code, setCode] = useState(activeFile?.content || "");
+  const [code, setCode] = useState(openFiles[activeFileId]?.content || "");
 
   const [showOutput, setShowOutput] = useState(false); // State to control output panel visibility
 
@@ -69,15 +69,17 @@ const CodeEditor = () => {
   const onCodeChange = useCallback(
     (newCode) => {
       setCode(newCode);
-      // Update the content of the active file in the openFiles state
-      setOpenFiles((prevFiles) =>
-        prevFiles.map((f) =>
+      setOpenFiles((prevFiles) => {
+        const updatedFiles = prevFiles.map((f) =>
           f.id === activeFileId ? { ...f, content: newCode } : f
-        )
-      );
+        );
+        return updatedFiles;
+      });
     },
     [activeFileId]
   );
+
+  console.log(openFiles);
 
   // Callback for language selection
   const onLanguageSelect = useCallback(
@@ -108,18 +110,25 @@ const CodeEditor = () => {
   // Callback for file selection
   const onFileSelect = useCallback(
     (id) => {
+      if (editorRef.current) {
+        const currentContent = editorRef.current.getValue();
+        console.log(currentContent);
+        setOpenFiles((prevFiles) =>
+          prevFiles.map((f) =>
+            f.id === activeFileId ? { ...f, content: currentContent } : f
+          )
+        );
+      }
+
       const selectedFile = openFiles.find((f) => f.id === id);
       if (selectedFile) {
         setActiveFileId(id);
         setLanguage(selectedFile.language || "javascript");
         setCode(selectedFile.content);
-        if (editorRef.current) {
-          editorRef.current.setValue(selectedFile.content);
-          editorRef.current.focus(); // Focus editor on file switch
-        }
+        
       }
     },
-    [openFiles]
+    [openFiles, activeFileId]
   );
 
   // Callback for closing a file
@@ -164,6 +173,15 @@ const CodeEditor = () => {
 
   // Callback for creating a new file
   const onNewFile = useCallback(() => {
+    if (editorRef.current) {
+      const currentContent = editorRef.current.getValue();
+      setOpenFiles((prevFiles) =>
+        prevFiles.map((f) =>
+          f.id === activeFileId ? { ...f, content: currentContent } : f
+        )
+      );
+    }
+
     const newFileId = `file-${Date.now()}`;
     const newFileName = `untitled-${openFiles.length + 1}.js`;
     const newFile = {
@@ -172,15 +190,12 @@ const CodeEditor = () => {
       content: "",
       language: "javascript",
     };
+
     setOpenFiles((prevFiles) => [...prevFiles, newFile]);
     setActiveFileId(newFileId);
     setLanguage("javascript");
     setCode(""); // New file starts empty
-    if (editorRef.current) {
-      editorRef.current.setValue(""); // Clear editor for new file
-      editorRef.current.focus();
-    }
-  }, [openFiles]);
+  }, [openFiles.length, activeFileId]);
 
   // Function to run the code
   const runCode = useCallback(async () => {
@@ -253,13 +268,15 @@ const CodeEditor = () => {
 
       {/* Main content area: Editor */}
       <div
-        className="flex flex-col flex-grow relative overflow-hidden rounded-lg shadow-lg m-2"
-        style={{ marginTop: `${TOP_BAR_HEIGHT + FILE_BAR_HEIGHT + 8}px` }}
+        className="flex flex-col flex-grow relative overflow-hidden rounded shadow-lg m-1"
+        // style={{ marginTop: `${TOP_BAR_HEIGHT + FILE_BAR_HEIGHT + 8}px` }}
       >
         <CodeEditorWindow
           className="relative rounded-lg overflow-hidden"
           style={{ height: `${editorHeight}px` }}
           onChange={onCodeChange}
+          activeFileId={activeFileId}
+          // openFiles = {openFiles}
           language={language}
           code={code}
           onMount={onMount}

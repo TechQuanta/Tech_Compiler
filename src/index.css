@@ -2,3 +2,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Chrome, Edge, Safari */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #000; /* Track color */
+  /* border-radius: 4px; */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #888; /* Thumb color */
+  /* border-radius: 4px; */
+  /* border: 2px solid #f1f1f1; Padding around thumb */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #856;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #1e1f1ee3;
+}

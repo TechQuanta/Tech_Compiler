@@ -1,7 +1,7 @@
 // components/TopBar.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../hooks/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { FiTerminal } from 'react-icons/fi';
 
 const TopBar = () => {
@@ -24,7 +24,7 @@ const TopBar = () => {
   const currentDotColors = dotColors[theme];
 
   return (
-    <header className="fixed top-0 left-0 w-full h-[20px] md:h-[40px] flex items-center justify-between px-2 md:px-4 z-50 border-b
+    <header className=" w-full h-[20px] md:h-[40px] flex items-center justify-between px-2 md:px-4 z-50 border-b
                          bg-light-background-primary border-light-border-primary text-light-text-primary
                          dark:bg-dark-background-primary dark:border-dark-border-primary dark:text-dark-text-primary">
       {/* Left: Branding Icon and Decorative three dots */}

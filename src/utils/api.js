@@ -1,6 +1,6 @@
 // src/components/api.js
 import axios from "axios";
-import { languageOptions } from "./utils/constant";
+import { languageOptions } from "./constant";
 
 // --- API Key Management (using Environment Variables for Rotation) ---
 let RAPIDAPI_KEYS_ARRAY = [];

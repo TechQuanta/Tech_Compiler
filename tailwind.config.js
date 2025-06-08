@@ -1,5 +1,5 @@
 // tailwind.config.js
-module.exports = {
+export default {
   darkMode: 'class', // <--- IMPORTANT: This enables class-based dark mode
   content: [ // <--- This 'content' array needs to be at the top level
     "./index.html",
