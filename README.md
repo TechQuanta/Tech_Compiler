@@ -64,7 +64,7 @@ The platform is built using modern web technologies including **React**, **Vite*
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd code-editor
+   cd tech_compiler
    ```
 
 2. **Install dependencies**
@@ -227,9 +227,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 👨‍💻 Author
 
 **[ VISHAL & SHAILENDRA ]**
-- GitHub: [@vishal6268],[Shailendrasingh189]
-- Email: vchoudhary999v@gmail.com , shailendrasingh189@gmail.com
-- LinkedIn: [https://www.linkedin.com/in/vishal-choudhary-1690202b7],[https://www.linkedin.com/in/shailendrasingh189].
+- GitHub: [Vishal](https://github.com/@vishal6268),[Shailendra Singh Panwar](https://github.com/Shailendrasingh189)
+- Email: [vchoudhary999v@gmail.com](vchoudhary999v@gmail.com) , [shailendrasingh189@gmail.com](shailendrasingh189@gmail.com)
+- LinkedIn: [Vishal Choudhary](https://www.linkedin.com/in/vishal-choudhary-1690202b7),[shailendrasingh189](https://www.linkedin.com/in/shailendrasingh189).
 
 ## 🙏 Acknowledgments
 
@@ -237,7 +237,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Monaco Editor team for the excellent code editor
 - React and Vite communities for the amazing tools
 - Tailwind CSS for the utility-first CSS framework
-
----
-
-**Note**: This is a graduation-level project demonstrating full-stack development skills, API integration, and modern web technologies. The platform serves as an educational tool for students learning multiple programming languages in a unified environment.
