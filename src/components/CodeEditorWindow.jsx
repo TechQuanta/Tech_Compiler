@@ -1,6 +1,5 @@
 // src/components/CodeEditorWindow.jsx
 import Editor from "@monaco-editor/react";
-import { CODE_SNIPPETS } from "../utils/constant"; // Correct path to constant.js
 
 const CodeEditorWindow = ({
   onChange,
@@ -10,37 +9,41 @@ const CodeEditorWindow = ({
   className = "",
   style = {},
   activeFileId,
-  // openFiles,
 }) => {
-  return activeFileId ? (
+  if (!activeFileId) {
+    return (
+      <p className="text-center text-gray-400 mt-4">
+        Select or create a file to start editing
+      </p>
+    );
+  }
+
+  return (
     <div className={`h-full ${className}`} style={style}>
       <Editor
-        height="100%" 
+        height="100%"
         language={language || "javascript"}
+        value={code}                 // ✅ single source of truth
         onMount={onMount}
-        value={code}
+        onChange={(val) => onChange(val ?? "")}
         theme="vs-dark"
         options={{
           minimap: { enabled: true },
-          fontSize: 14, 
+          fontSize: 14,
           scrollBeyondLastLine: false,
-          wordWrap: "on", 
-          showUnused: true, 
+          wordWrap: "on",
+          showUnused: true,
           cursorBlinking: "smooth",
           cursorSmoothCaretAnimation: "on",
-          renderLineHighlight: "all", 
-          lineNumbersMinChars: 3, 
+          renderLineHighlight: "all",
+          lineNumbersMinChars: 3,
           fontFamily: "Fira Code, Consolas, 'Courier New', monospace",
-          fontLigatures: true, 
+          fontLigatures: true,
           "bracketPairColorization.enabled": true,
           "guides.bracketPairs": "active",
         }}
-        defaultValue={CODE_SNIPPETS[language]}
-        onChange={(val) => onChange(val)}
       />
     </div>
-  ) : (
-    <p>Select or create a file to start editing</p>
   );
 };
 
