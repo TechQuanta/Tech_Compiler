@@ -81,9 +81,30 @@ Space Complexity: O(...)
 
   return (
     <>
-      <button className="chat-toggle" onClick={() => setOpen(!open)}>
-        💬
-      </button>
+      <button
+  onClick={() => setOpen(!open)}
+  style={{
+    position: "fixed",
+    bottom: "24px",
+    right: "24px",
+    width: "60px",
+    height: "60px",
+    minWidth: "60px",
+    minHeight: "60px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+    color: "#fff",
+    fontSize: "24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    zIndex: 999999,
+  }}
+>
+  💬
+</button>
+
 
       {open && (
         <div className={`chat-container ${fullScreen ? "fullscreen" : ""}`}>

@@ -5,11 +5,6 @@ import FileBar from "../components/FileBar";
 import { executeCode } from "../utils/api.js";
 import Output from "../components/Output";
 import CodeMate from "../components/ChatBot/CodeMate";
-
-
-
-
-
 import { CODE_SNIPPETS } from "../utils/constant";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import useKeyPress from "../hooks/keyPress";

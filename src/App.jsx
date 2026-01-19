@@ -1,7 +1,7 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import CompilerLandingPage from "./pages/CodeEditor";
+import CompilerLandingPage from "./pages/CompilerLandingPage";
 import CodeEditor from "./pages/CodeEditor";
 
 function App() {

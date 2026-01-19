@@ -35,6 +35,11 @@
   align-items: center;
   justify-content: center;
 }
+.chat-toggle {
+  width: 60px;
+  height: 60px;
+}
+
 
 .chat-toggle:hover {
   transform: scale(1.1) rotate(10deg);
