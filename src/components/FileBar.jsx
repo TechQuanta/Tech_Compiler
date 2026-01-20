@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { languageOptions } from "../utils/constant.js"; // Assuming languageOptions is defined here
 import { useTheme } from "../context/ThemeContext";
 
-import { FiPlus, FiPlay, FiChevronDown } from "react-icons/fi";
+import { FiPlus, FiPlay, FiChevronDown, FiDownload } from "react-icons/fi";
 
 const FileBar = ({
   language,
   onLanguageSelect,
   onRunCode,
+  onDownloadCode, // <--- Added prop here
   isLoading,
   openFiles,
   activeFileId,
@@ -53,8 +54,8 @@ const FileBar = ({
   return (
     <nav
       className=" w-full h-[50px] md:h-[50px] flex items-center justify-between py-2 px-2 md:px-4 z-40 shadow-xl border-b
-                     bg-light-background-secondary text-light-text-primary border-light-border-primary
-                     dark:bg-dark-background-secondary dark:text-dark-text-primary dark:border-dark-border-primary"
+                      bg-light-background-secondary text-light-text-primary border-light-border-primary
+                      dark:bg-dark-background-secondary dark:text-dark-text-primary dark:border-dark-border-primary"
     >
       {/* File Tabs Section */}
       <div className="flex flex-grow overflow-x-auto overflow-hidden whitespace-nowrap custom-scrollbar pr-2 md:pr-4">
@@ -119,8 +120,8 @@ const FileBar = ({
         <button
           onClick={onNewFile}
           className="flex-shrink-0 px-2 py-1 md:px-3 md:py-1.5 rounded-t-lg text-xs md:text-sm transition-colors duration-200 shadow-sm
-                       bg-light-accent-purple text-white hover:bg-light-accent-purple/80 hover:shadow-light-accent-purple/30
-                       dark:bg-dark-accent-purple dark:text-dark-text-primary dark:hover:bg-dark-accent-purple/80 dark:hover:shadow-dark-accent-purple/30 flex items-center gap-1"
+                        bg-light-accent-purple text-white hover:bg-light-accent-purple/80 hover:shadow-light-accent-purple/30
+                        dark:bg-dark-accent-purple dark:text-dark-text-primary dark:hover:bg-dark-accent-purple/80 dark:hover:shadow-dark-accent-purple/30 flex items-center gap-1"
           aria-label="New file"
         >
           <FiPlus className="w-3 h-3 md:w-4 md:h-4" />
@@ -130,6 +131,19 @@ const FileBar = ({
 
       {/* Compiler Controls Section */}
       <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+        
+        {/* Download Button - Added Here */}
+        <button
+          onClick={onDownloadCode}
+          className="px-3 py-1 md:px-4 md:py-1.5 rounded-md font-semibold text-xs md:text-base transition-all duration-200 focus:outline-none focus:ring-2 shadow-md hover:shadow-lg flex items-center gap-1 
+            bg-light-accent-blue text-light-text-primary hover:bg-light-accent-blue/80 focus:ring-light-accent-blue focus:ring-opacity-70 hover:shadow-light-accent-blue/40
+            dark:bg-dark-accent-blue dark:text-dark-text-primary dark:hover:bg-dark-accent-blue/80 dark:focus:ring-dark-accent-blue dark:focus:ring-opacity-70 dark:hover:shadow-dark-accent-blue/40"
+          title="Download Code"
+        >
+          <FiDownload className="w-4 h-4 md:w-5 md:h-5" />
+          <span className="hidden md:inline">Download</span>
+        </button>
+
         {/* Run Code Button with icon */}
         <button
           onClick={onRunCode}
@@ -162,8 +176,8 @@ const FileBar = ({
             value={language}
             onChange={(e) => onLanguageSelect(e.target.value)}
             className="rounded-md pl-2 pr-6 py-1 md:px-3 md:py-2 text-xs md:text-sm appearance-none focus:outline-none focus:ring-2 cursor-pointer shadow-sm
-                         bg-light-input-bg text-light-text-primary focus:ring-light-accent-blue focus:ring-opacity-70
-                         dark:bg-dark-input-bg dark:text-dark-text-primary dark:focus:ring-dark-accent-blue dark:focus:ring-opacity-70"
+                          bg-light-input-bg text-light-text-primary focus:ring-light-accent-blue focus:ring-opacity-70
+                          dark:bg-dark-input-bg dark:text-dark-text-primary dark:focus:ring-dark-accent-blue dark:focus:ring-opacity-70"
           >
             {Object.values(languageOptions).map((lang) => (
               <option key={lang.id} value={lang.value}>
@@ -187,8 +201,8 @@ const FileBar = ({
               getLanguageVersions(language).length === 0
             }
             className="rounded-md pl-2 pr-6 py-1 md:px-3 md:py-2 text-xs md:text-sm appearance-none focus:outline-none focus:ring-2 cursor-pointer shadow-sm
-                         bg-light-input-bg text-light-text-primary focus:ring-light-accent-blue focus:ring-opacity-70
-                         dark:bg-dark-input-bg dark:text-dark-text-primary dark:focus:ring-dark-accent-blue dark:focus:ring-opacity-70"
+                          bg-light-input-bg text-light-text-primary focus:ring-light-accent-blue focus:ring-opacity-70
+                          dark:bg-dark-input-bg dark:text-dark-text-primary dark:focus:ring-dark-accent-blue dark:focus:ring-opacity-70"
           >
             {getLanguageVersions(language).map((v) => (
               <option key={v} value={v}>
