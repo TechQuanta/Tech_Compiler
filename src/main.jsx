@@ -6,9 +6,8 @@ import { ThemeProvider } from './context/ThemeContext'; // Import ThemeProvider
 import './index.css'; // Your global Tailwind CSS file
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
     <ThemeProvider> {/* Wrap your entire application with ThemeProvider */}
       <App/>
     </ThemeProvider>
-  </React.StrictMode>,
+
 );

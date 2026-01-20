@@ -5,7 +5,6 @@ import FileBar from "../components/FileBar";
 import { executeCode } from "../utils/api.js";
 import Output from "../components/Output";
 import CodeMate from "../components/ChatBot/CodeMate";
-
 import { CODE_SNIPPETS } from "../utils/constant";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import useKeyPress from "../hooks/keyPress";
@@ -13,31 +12,6 @@ import { useTheme } from "../context/ThemeContext"; // Import useTheme hook
 
 const TOP_BAR_HEIGHT = 40; // px
 const FILE_BAR_HEIGHT = 50; // px
-
-// 1. Define the extensions mapping
-const LANGUAGE_EXTENSIONS = {
-  javascript: "js",
-  typescript: "ts",
-  python: "py",
-  java: "java",
-  cpp: "cpp",
-  c: "c",
-  csharp: "cs",
-  php: "php",
-  ruby: "rb",
-  go: "go",
-  rust: "rs",
-  swift: "swift",
-  kotlin: "kt",
-  html: "html",
-  css: "css",
-  json: "json",
-  xml: "xml",
-  sql: "sql",
-  shell: "sh",
-  markdown: "md",
-  plaintext: "txt",
-};
 
 const CodeEditor = () => {
   const editorRef = useRef(null);
@@ -248,42 +222,6 @@ const CodeEditor = () => {
     }
   }, [language]); // Depend on language to ensure latest selected language is used
 
-  // 2. Function to download the code
-  const downloadCode = useCallback(() => {
-    if (!editorRef.current) return;
-
-    const currentCode = editorRef.current.getValue();
-    const extension = LANGUAGE_EXTENSIONS[language] || "txt";
-    
-    // Ensure filename ends with correct extension
-    let fileName = activeFile?.name || `untitled.${extension}`;
-    
-    // If filename doesn't have an extension or has a different one, append/replace it
-    if (!fileName.includes(".")) {
-       fileName = `${fileName}.${extension}`;
-    } else {
-       // Optional: Force the correct extension based on language
-       const nameParts = fileName.split('.');
-       const currentExt = nameParts.pop();
-       if (currentExt !== extension) {
-          fileName = `${nameParts.join('.')}.${extension}`;
-       }
-    }
-
-    const blob = new Blob([currentCode], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    
-    // Cleanup
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [language, activeFile]);
-
   // Effect for Ctrl + Enter shortcut to run code
   useEffect(() => {
     if (enterPress && ctrlPress) {
@@ -319,7 +257,6 @@ const CodeEditor = () => {
         language={language}
         onLanguageSelect={onLanguageSelect}
         onRunCode={runCode}
-        onDownloadCode={downloadCode} // 3. Pass the download function here
         isLoading={isLoading}
         openFiles={openFiles}
         activeFileId={activeFileId}
