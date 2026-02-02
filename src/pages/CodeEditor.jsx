@@ -1,9 +1,9 @@
-// src/pages/CodeEditor.jsx
 import { useRef, useState, useEffect, useCallback } from "react";
 import TopBar from "../components/TopBar";
 import FileBar from "../components/FileBar";
 import Output from "../components/Output";
 import CodeEditorWindow from "../components/CodeEditorWindow";
+import CodeMate from "../components/ChatBot/CodeMate"; 
 
 import { executeCode } from "../utils/api";
 import { CODE_SNIPPETS } from "../utils/constant";
@@ -228,7 +228,7 @@ const CodeEditor = () => {
   /* -------------------- RENDER -------------------- */
   return (
     <div
-      className={`h-screen flex flex-col ${
+      className={`h-screen flex flex-col relative ${
         theme === "dark"
           ? "bg-dark-background-primary"
           : "bg-light-background-primary"
@@ -265,6 +265,8 @@ const CodeEditor = () => {
         showOutput={showOutput}
         toggleTerminal={setShowOutput}
       />
+
+      <CodeMate />
     </div>
   );
 };
