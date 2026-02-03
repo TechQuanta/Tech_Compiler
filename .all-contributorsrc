@@ -17,7 +17,20 @@
       "link": "[<%= symbol %>](<%= url %> \"<%= description %>\")"
     }
   },
-  "contributors": [],
+  "contributors": [
+    {
+      "login": "prav10140",
+      "name": "PRAVEEN PATEL",
+      "avatar_url": "https://avatars.githubusercontent.com/u/181519449?v=4",
+      "profile": "https://prav10140.github.io/praveen/",
+      "contributions": [
+        "maintenance",
+        "infra",
+        "code",
+        "ideas"
+      ]
+    }
+  ],
   "commitConvention": "angular",
   "commitType": "docs"
 }
