@@ -29,6 +29,16 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "vishal6268",
+      "name": "VISHAL",
+      "avatar_url": "https://avatars.githubusercontent.com/u/125592050?v=4",
+      "profile": "https://github.com/vishal6268",
+      "contributions": [
+        "maintenance",
+        "doc"
+      ]
     }
   ],
   "commitConvention": "angular",
