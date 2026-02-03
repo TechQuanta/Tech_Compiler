@@ -29,6 +29,15 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "MohitPal2005",
+      "name": "Mohit Pal",
+      "avatar_url": "https://avatars.githubusercontent.com/u/195854488?v=4",
+      "profile": "https://mohitpal-portfolio.vercel.app/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "commitConvention": "angular",
