@@ -1,1 +1,23 @@
-
+{
+  "projectName": "Tech_Compiler",
+  "projectOwner": "TechQuanta",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "CONTRIBUTING.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": false,
+  "types": {
+    "custom": {
+      "symbol": "🔭",
+      "description": "A custom contribution type.",
+      "link": "[<%= symbol %>](<%= url %> \"<%= description %>\")"
+    }
+  },
+  "contributors": [],
+  "commitConvention": "angular",
+  "commitType": "docs"
+}
