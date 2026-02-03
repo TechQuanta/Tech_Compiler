@@ -38,14 +38,22 @@
       "contributions": [
         "maintenance"
       ]
-},
-{
+    },
+    {
       "login": "MohitPal2005",
       "name": "Mohit Pal",
       "avatar_url": "https://avatars.githubusercontent.com/u/195854488?v=4",
       "profile": "https://mohitpal-portfolio.vercel.app/",
       "contributions": [
-
+        "doc"
+      ]
+    },
+    {
+      "login": "GauravKarakoti",
+      "name": "Gaurav Karakoti",
+      "avatar_url": "https://avatars.githubusercontent.com/u/180496085?v=4",
+      "profile": "https://gauravkarakoti.netlify.app",
+      "contributions": [
         "doc"
       ]
     }
