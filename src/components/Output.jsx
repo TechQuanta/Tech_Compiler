@@ -1,103 +1,62 @@
-// src/components/Output.jsx
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import useMediaQuery from "../hooks/mediaQuery";
+import { FiX, FiTerminal, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
 import { useTheme } from "../context/ThemeContext";
 
-// Dimensions for desktop terminal
-const OUTPUT_CARD_WIDTH = "400px";
-const OUTPUT_CARD_HEIGHT = "300px";
-
-const Output = ({ output = {}, isError, showOutput, toggleTerminal }) => {
+const Output = ({ output, isError, showOutput, isLoading, onClose }) => {
   const { theme } = useTheme();
+  const isDark = theme === "dark";
 
-  const outputText = isError
-    ? output.stderr || output.compile_output || "An error occurred during execution."
-    : output.stdout || "No output yet. Run your code!";
-
-  const outputColor = isError
-    ? "text-red-400"
-    : theme === "dark"
-      ? "text-dark-text-secondary"
-      : "text-gray-700";
-
-  const isLargeScreen = useMediaQuery("(min-width: 640px)");
-
-  const mobileVariants = {
-    hidden: { y: "100%", opacity: 0 },
-    visible: { y: 0, opacity: 1 },
-    exit: { y: "100%", opacity: 0 },
-  };
-
-  const desktopVariants = {
-    hidden: { x: "100%", opacity: 0 },
-    visible: { x: 0, opacity: 1 },
-    exit: { x: "100%", opacity: 0 },
-  };
+  if (!showOutput) return null;
 
   return (
-    <AnimatePresence>
-      {showOutput && (
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          variants={isLargeScreen ? desktopVariants : mobileVariants}
-          transition={{ type: "spring", damping: 20, stiffness: 200 }}
-          style={{
-            "--output-width": OUTPUT_CARD_WIDTH,
-            "--output-height": OUTPUT_CARD_HEIGHT,
-          }}
-          className={`fixed bottom-0 left-0 right-0 z-50 w-full h-[50vh] max-h-[80vh]
-            flex flex-col text-sm font-mono shadow-2xl border-t rounded-t-lg
-            sm:bottom-4 sm:right-4 sm:left-auto sm:w-[var(--output-width)]
-            sm:h-[var(--output-height)] sm:border sm:rounded-lg
-            ${
-              theme === "dark"
-                ? "bg-dark-background-secondary border-dark-border-primary"
-                : "bg-gray-100 border-gray-300"
-            }`}
+    <div className={`h-[35%] flex flex-col border-t z-10 transition-colors
+      ${isDark 
+        ? "bg-[#1e1e1e] border-[#333] text-gray-300" 
+        : "bg-white border-gray-300 text-gray-800"}`}>
+      <div className={`flex items-center justify-between px-4 py-2 border-b text-xs font-semibold uppercase tracking-wider
+        ${isDark ? "bg-[#252526] border-[#333]" : "bg-gray-100 border-gray-200"}`}>
+        
+        <div className="flex items-center gap-2">
+          <FiTerminal className={isError ? "text-red-500" : "text-blue-500"} />
+          <span>Console Output</span>
+          {isLoading && <span className="text-yellow-500 normal-case ml-2 animate-pulse">Running...</span>}
+        </div>
+
+        <button 
+          onClick={onClose} 
+          className="p-1 hover:bg-gray-500/20 rounded-md transition-colors"
+          title="Close Terminal"
         >
-          {/* Header */}
-          <div
-            className={`flex items-center justify-between p-3 border-b
-              ${
-                theme === "dark"
-                  ? "bg-dark-background-primary border-dark-border-primary"
-                  : "bg-gray-200 border-gray-300"
-              }`}
-          >
-            <h3
-              className={`font-semibold ${
-                theme === "dark" ? "text-dark-accent-green" : "text-green-600"
-              }`}
-            >
-              Terminal Output
-            </h3>
+          <FiX size={14} />
+        </button>
+      </div>
 
-            <button
-              onClick={() => toggleTerminal(false)}
-              aria-label="Close Terminal"
-              className={`transition-colors duration-200
-                ${
-                  theme === "dark"
-                    ? "text-gray-400 hover:text-white"
-                    : "text-gray-500 hover:text-gray-800"
-                }`}
-            >
-              ✕
-            </button>
+      <div className="flex-grow overflow-auto p-4 font-mono text-sm">
+        {isLoading ? (
+          <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-3 opacity-50">
+             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+             <p>Compiling execution environment...</p>
           </div>
+        ) : output ? (
+          <div>
+            <div className={`mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border
+              ${isError 
+                ? "bg-red-500/10 text-red-500 border-red-500/20" 
+                : "bg-green-500/10 text-green-500 border-green-500/20"}`}>
+              {isError ? <FiAlertCircle /> : <FiCheckCircle />}
+              {isError ? "Execution Failed" : "Execution Successful"}
+            </div>
 
-          {/* Output Body */}
-          <div className="p-4 flex-grow overflow-y-auto custom-scrollbar">
-            <pre className={`${outputColor} whitespace-pre-wrap`}>
-              {outputText}
+            <pre className="whitespace-pre-wrap break-words leading-relaxed">
+              {output.stdout || output.stderr || output.compile_output || <span className="text-gray-500 italic">No output returned.</span>}
             </pre>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-500 italic">
+            Press "Run Code" to see the output here.
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

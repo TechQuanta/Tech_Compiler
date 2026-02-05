@@ -1,131 +1,72 @@
-// src/components/FileBar.jsx
-import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FiPlay, FiPlus, FiX, FiSettings, FiLoader } from "react-icons/fi";
 import { languageOptions } from "../utils/constant";
 import { useTheme } from "../context/ThemeContext";
-import { FiPlus, FiPlay, FiChevronDown } from "react-icons/fi";
 
 const FileBar = ({
   language,
   onLanguageSelect,
   onRunCode,
-  onShare,
   isLoading,
   openFiles,
   activeFileId,
   onFileSelect,
   onFileClose,
   onNewFile,
-  onVersionSelect,
 }) => {
   const { theme } = useTheme();
-  const [version, setVersion] = useState("");
-
-  // Get versions for selected language
-  const getLanguageVersions = (langValue) => {
-    const lang = Object.values(languageOptions).find(
-      (opt) => opt.value === langValue
-    );
-    return lang?.versions?.length ? lang.versions : lang?.version ? [lang.version] : [];
-  };
-
-  // Sync version with language
-  useEffect(() => {
-    const lang = Object.values(languageOptions).find(
-      (opt) => opt.value === language
-    );
-    const v = lang?.version || "";
-    setVersion(v);
-    onVersionSelect(v);
-  }, [language, onVersionSelect]);
-
-  const handleVersionChange = (e) => {
-    setVersion(e.target.value);
-    onVersionSelect(e.target.value);
-  };
+  const isDark = theme === "dark";
 
   return (
-    <nav className="w-full h-[50px] flex items-center justify-between px-2 md:px-4 border-b shadow-xl
-                    bg-light-background-secondary dark:bg-dark-background-secondary
-                    border-light-border-primary dark:border-dark-border-primary">
-
-      {/* ================= FILE TABS ================= */}
-      <div className="flex flex-grow overflow-x-auto custom-scrollbar pr-3">
-        <AnimatePresence mode="popLayout">
+    <div className={`h-12 flex items-center justify-between px-4 border-b select-none
+      ${isDark ? "bg-[#1e1e1e] border-[#333]" : "bg-gray-100 border-gray-300"}`}>
+      <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar mask-gradient-right">
+        <AnimatePresence>
           {openFiles.map((file) => (
-            <motion.button
+            <motion.div
               key={file.id}
-              layout
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 30 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, width: 0 }}
               onClick={() => onFileSelect(file.id)}
-              className={`flex items-center px-3 py-1 mr-2 rounded-t-lg text-xs md:text-sm relative
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-t-md cursor-pointer transition-colors text-sm border-t border-l border-r border-transparent
                 ${
                   activeFileId === file.id
-                    ? "bg-light-accent-blue dark:bg-dark-accent-blue text-white font-semibold"
-                    : "bg-light-input-bg dark:bg-dark-input-bg text-gray-400 hover:text-white"
+                    ? isDark 
+                      ? "bg-[#2d2d2d] text-white border-[#333]" 
+                      : "bg-white text-blue-600 border-gray-300 shadow-sm"
+                    : "text-gray-500 hover:bg-opacity-10 hover:bg-gray-500"
                 }`}
             >
-              <span className="truncate max-w-[100px]">{file.name}</span>
-
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFileClose(file.id);
-                }}
-                className="ml-2 text-xs font-bold hover:text-red-400"
+              <span className="max-w-[100px] truncate">{file.name}</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); onFileClose(file.id); }}
+                className={`opacity-0 group-hover:opacity-100 p-0.5 rounded-full hover:bg-red-500 hover:text-white transition-all`}
               >
-                ×
-              </span>
-
-              {activeFileId === file.id && (
-                <motion.div
-                  layoutId="active-tab"
-                  className="absolute bottom-0 left-0 right-0 h-[2px]
-                             bg-light-accent-green dark:bg-dark-accent-green"
-                />
-              )}
-            </motion.button>
+                <FiX size={10} />
+              </button>
+            </motion.div>
           ))}
         </AnimatePresence>
-
-        {/* New File Button */}
-        <button
+        
+        <button 
           onClick={onNewFile}
-          className="px-2 py-1 rounded-t-lg text-xs md:text-sm
-                     bg-light-accent-purple dark:bg-dark-accent-purple text-white flex items-center gap-1"
+          className="p-1.5 ml-1 text-gray-400 hover:text-green-500 hover:bg-green-500/10 rounded-md transition-colors"
+          title="New File"
         >
-          <FiPlus size={14} />
-          <span className="hidden md:inline">New</span>
+          <FiPlus size={16} />
         </button>
       </div>
 
-      {/* ================= CONTROLS ================= */}
-      <div className="flex items-center gap-2 md:gap-4">
-
-        {/* Share */}
-
-        {/* Run */}
-        <button
-          onClick={onRunCode}
-          disabled={isLoading}
-          className={`px-3 py-1 rounded-md flex items-center gap-1
-                      bg-light-accent-green dark:bg-dark-accent-green text-white
-                      ${isLoading ? "opacity-60 cursor-not-allowed" : ""}`}
-        >
-          <FiPlay size={14} />
-          <span className="hidden md:inline">Run</span>
-        </button>
-
-        {/* Language */}
-        <div className="relative">
+      <div className="flex items-center gap-3">
+        <div className="relative group">
           <select
             value={language}
-            onChange={(e) => onLanguageSelect(e.target.value)}
-            className="pl-2 pr-6 py-1 rounded-md text-xs md:text-sm
-                       bg-light-input-bg dark:bg-dark-input-bg text-white"
+            onChange={(e) => onLanguageSelect && onLanguageSelect(e.target.value)}
+            className={`appearance-none pl-3 pr-8 py-1.5 text-xs font-medium rounded-md border outline-none cursor-pointer transition-all
+              ${isDark 
+                ? "bg-[#2d2d2d] border-[#444] text-gray-300 hover:border-gray-500 focus:border-blue-500" 
+                : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"}`}
           >
             {Object.values(languageOptions).map((lang) => (
               <option key={lang.id} value={lang.value}>
@@ -133,30 +74,22 @@ const FileBar = ({
               </option>
             ))}
           </select>
-          <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <FiSettings className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={12} />
         </div>
 
-        {/* Version */}
-        <div className="relative">
-          <select
-            value={version}
-            onChange={handleVersionChange}
-            disabled={!getLanguageVersions(language).length}
-            className="pl-2 pr-6 py-1 rounded-md text-xs md:text-sm
-                       bg-light-input-bg dark:bg-dark-input-bg text-white"
-          >
-            {getLanguageVersions(language).map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-            {!getLanguageVersions(language).length && <option>N/A</option>}
-          </select>
-          <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
-
+        <button
+          onClick={onRunCode}
+          disabled={isLoading}
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider text-white shadow-lg transition-transform active:scale-95
+            ${isLoading 
+              ? "bg-gray-600 cursor-wait opacity-80" 
+              : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 hover:shadow-green-500/20"}`}
+        >
+          {isLoading ? <FiLoader className="animate-spin" size={14}/> : <FiPlay size={14} fill="currentColor" />}
+          {isLoading ? "Running..." : "Run Code"}
+        </button>
       </div>
-    </nav>
+    </div>
   );
 };
 

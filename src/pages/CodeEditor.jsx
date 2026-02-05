@@ -3,21 +3,15 @@ import TopBar from "../components/TopBar";
 import FileBar from "../components/FileBar";
 import Output from "../components/Output";
 import CodeEditorWindow from "../components/CodeEditorWindow";
-import CodeMate from "../components/ChatBot/CodeMate"; 
-
+import CodeMate from "../components/ChatBot/CodeMate";
 import { executeCode } from "../utils/api";
 import { CODE_SNIPPETS } from "../utils/constant";
 import useKeyPress from "../hooks/keyPress";
 import { useTheme } from "../context/ThemeContext";
 
-const TOP_BAR_HEIGHT = 40;
-const FILE_BAR_HEIGHT = 50;
-
 const CodeEditor = () => {
   const editorRef = useRef(null);
   const { theme } = useTheme();
-
-  /* -------------------- FILE STATE -------------------- */
   const [openFiles, setOpenFiles] = useState([
     {
       id: "file1",
@@ -27,50 +21,61 @@ const CodeEditor = () => {
     },
   ]);
   const [activeFileId, setActiveFileId] = useState("file1");
-
-  const activeFile = openFiles.find((f) => f.id === activeFileId);
-
-  /* -------------------- EDITOR STATE -------------------- */
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState(CODE_SNIPPETS.javascript);
-  const [version, setVersion] = useState("");
-
-  const [editorHeight, setEditorHeight] = useState(
-    window.innerHeight - TOP_BAR_HEIGHT - FILE_BAR_HEIGHT
-  );
-
-  /* -------------------- OUTPUT STATE -------------------- */
   const [showOutput, setShowOutput] = useState(false);
-  const [output, setOutput] = useState({
-    stdout: "",
-    stderr: "",
-    compile_output: "",
-  });
+  const [output, setOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [version, setVersion] = useState("");
 
   /* -------------------- SHORTCUTS -------------------- */
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
-
-  /* -------------------- MONACO MOUNT -------------------- */
   const onMount = useCallback((editor) => {
     editorRef.current = editor;
     editor.focus();
   }, []);
 
-  /* -------------------- CODE CHANGE -------------------- */
-  const onCodeChange = useCallback(
-    (newCode) => {
-      setCode(newCode);
-      setOpenFiles((prev) =>
-        prev.map((f) =>
-          f.id === activeFileId ? { ...f, content: newCode } : f
-        )
-      );
-    },
-    [activeFileId]
-  );
+  const onCodeChange = useCallback((newCode) => {
+    setCode(newCode);
+    setOpenFiles((prev) =>
+      prev.map((f) => (f.id === activeFileId ? { ...f, content: newCode } : f))
+    );
+  }, [activeFileId]);
+
+  const runCode = useCallback(async () => {
+    const source = editorRef.current?.getValue();
+    if (!source) return;
+
+    setShowOutput(true);
+    setIsLoading(true);
+    
+    try {
+      const { run } = await executeCode(language, source);
+      setOutput(run || {});
+      setIsError(!!run?.stderr || !!run?.compile_output);
+    } catch (e) {
+      setIsError(true);
+      setOutput({ stderr: e.message });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [language]);
+
+  useEffect(() => {
+    if (ctrlPress && enterPress) runCode();
+  }, [ctrlPress, enterPress, runCode]);
+
+  const onFileSelect = (id) => {
+    const file = openFiles.find((f) => f.id === id);
+    if(file) {
+        setActiveFileId(id);
+        setLanguage(file.language);
+        setCode(file.content);
+        editorRef.current?.setValue(file.content);
+    }
+  };
 
   /* -------------------- LANGUAGE CHANGE -------------------- */
   const onLanguageSelect = useCallback(
@@ -94,23 +99,6 @@ const CodeEditor = () => {
     [activeFileId]
   );
 
-  /* -------------------- FILE SWITCH -------------------- */
-  const onFileSelect = useCallback(
-    (id) => {
-      const file = openFiles.find((f) => f.id === id);
-      if (!file) return;
-
-      setActiveFileId(id);
-      setLanguage(file.language);
-      setCode(file.content);
-
-      setTimeout(() => {
-        editorRef.current?.setValue(file.content);
-      }, 0);
-    },
-    [openFiles]
-  );
-
   /* -------------------- NEW FILE -------------------- */
   const onNewFile = useCallback(() => {
     const id = `file-${Date.now()}`;
@@ -129,6 +117,17 @@ const CodeEditor = () => {
     setTimeout(() => {
       editorRef.current?.setValue("");
     }, 0);
+  }, []);
+
+  const handleShareCode = useCallback(() => {
+    const source = editorRef.current?.getValue();
+    if (!source) return;
+
+    const encoded = btoa(unescape(encodeURIComponent(source)));
+    const url = `${window.location.origin}/editor?code=${encoded}`;
+
+    navigator.clipboard.writeText(url);
+    alert("Shareable code link copied!");
   }, []);
 
   /* -------------------- CLOSE FILE -------------------- */
@@ -154,117 +153,48 @@ const CodeEditor = () => {
     [activeFileId]
   );
 
-  /* -------------------- RUN CODE -------------------- */
-  const runCode = useCallback(async () => {
-    const source = editorRef.current?.getValue();
-    if (!source) return;
-
-    try {
-      setIsLoading(true);
-      const { run } = await executeCode(language, source);
-
-      setOutput(run || {});
-      setIsError(!!run?.stderr || !!run?.compile_output);
-      setShowOutput(true);
-    } catch (e) {
-      setIsError(true);
-      setOutput({ stderr: e.message });
-      setShowOutput(true);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [language]);
-
-  /* -------------------- SHARE CODE -------------------- */
-  const handleShareCode = useCallback(() => {
-    const source = editorRef.current?.getValue();
-    if (!source) return;
-
-    const encoded = btoa(unescape(encodeURIComponent(source)));
-    const url = `${window.location.origin}/editor?code=${encoded}`;
-
-    navigator.clipboard.writeText(url);
-    alert("Shareable code link copied!");
-  }, []);
-
-  /* -------------------- LOAD SHARED CODE (ONCE) -------------------- */
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sharedCode = params.get("code");
-    if (!sharedCode) return;
-
-    try {
-      const decoded = decodeURIComponent(escape(atob(sharedCode)));
-
-      setCode(decoded);
-      setOpenFiles((prev) =>
-        prev.map((f) =>
-          f.id === "file1" ? { ...f, content: decoded } : f
-        )
-      );
-
-      setTimeout(() => {
-        editorRef.current?.setValue(decoded);
-      }, 0);
-    } catch {
-      console.error("Invalid shared code");
-    }
-  }, []);
-
-  /* -------------------- CTRL + ENTER -------------------- */
-  useEffect(() => {
-    if (ctrlPress && enterPress) runCode();
-  }, [ctrlPress, enterPress, runCode]);
-
-  /* -------------------- RESIZE -------------------- */
-  useEffect(() => {
-    const resize = () =>
-      setEditorHeight(window.innerHeight - TOP_BAR_HEIGHT - FILE_BAR_HEIGHT);
-
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
-
-  /* -------------------- RENDER -------------------- */
   return (
-    <div
-      className={`h-screen flex flex-col relative ${
-        theme === "dark"
-          ? "bg-dark-background-primary"
-          : "bg-light-background-primary"
-      }`}
-    >
-      <TopBar onShare={handleShareCode} />
-
+    <div className={`h-screen flex flex-col overflow-hidden ${
+        theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+      }`}>
+      
+      <TopBar />
+      
       <FileBar
         language={language}
-        onLanguageSelect={onLanguageSelect}
+        setLanguage={setLanguage}
         onRunCode={runCode}
-        onShare={handleShareCode}
         isLoading={isLoading}
         openFiles={openFiles}
         activeFileId={activeFileId}
         onFileSelect={onFileSelect}
+        onLanguageSelect={onLanguageSelect}
+        onShare={handleShareCode}
         onFileClose={onFileClose}
         onNewFile={onNewFile}
         onVersionSelect={setVersion}
       />
 
-      <CodeEditorWindow
-        style={{ height: editorHeight }}
-        onChange={onCodeChange}
-        activeFileId={activeFileId}
-        language={language}
-        code={code}
-        onMount={onMount}
-      />
+      <div className="flex-grow flex flex-col relative overflow-hidden">
+        <div className={`flex-grow transition-all duration-300 ease-in-out ${showOutput ? 'h-[65%]' : 'h-full'}`}>
+           <CodeEditorWindow
+             code={code}
+             onChange={onCodeChange}
+             language={language}
+             onMount={onMount}
+             activeFileId={activeFileId}
+           />
+        </div>
 
-      <Output
-        output={output}
-        isError={isError}
-        showOutput={showOutput}
-        toggleTerminal={setShowOutput}
-      />
+        <Output
+          output={output}
+          isError={isError}
+          showOutput={showOutput}
+          isLoading={isLoading}
+          onClose={() => setShowOutput(false)}
+        />
+        
+      </div>
 
       <CodeMate />
     </div>
