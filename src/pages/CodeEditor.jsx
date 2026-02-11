@@ -4,6 +4,8 @@ import FileBar from "../components/FileBar";
 import Output from "../components/Output";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import CodeMate from "../components/ChatBot/CodeMate";
+import ShareModal from "../components/ShareModal";
+import CollaborationPanel from "../components/CollaborationPanel";
 import { executeCode } from "../utils/api";
 import { CODE_SNIPPETS } from "../utils/constant";
 import useKeyPress from "../hooks/keyPress";
@@ -12,6 +14,7 @@ import { useTheme } from "../context/ThemeContext";
 const CodeEditor = () => {
   const editorRef = useRef(null);
   const { theme } = useTheme();
+  
   const [openFiles, setOpenFiles] = useState([
     {
       id: "file1",
@@ -23,15 +26,18 @@ const CodeEditor = () => {
   const [activeFileId, setActiveFileId] = useState("file1");
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState(CODE_SNIPPETS.javascript);
+  const [version, setVersion] = useState("");
   const [showOutput, setShowOutput] = useState(false);
   const [output, setOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [version, setVersion] = useState("");
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCollabPanelOpen, setIsCollabPanelOpen] = useState(false);
 
   /* -------------------- SHORTCUTS -------------------- */
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
+  
   const onMount = useCallback((editor) => {
     editorRef.current = editor;
     editor.focus();
@@ -77,9 +83,7 @@ const CodeEditor = () => {
     }
   };
 
-  /* -------------------- LANGUAGE CHANGE -------------------- */
-  const onLanguageSelect = useCallback(
-    (newLanguage) => {
+  const onLanguageSelect = useCallback((newLanguage) => {
       setLanguage(newLanguage);
       const snippet = CODE_SNIPPETS[newLanguage] || "";
 
@@ -99,7 +103,6 @@ const CodeEditor = () => {
     [activeFileId]
   );
 
-  /* -------------------- NEW FILE -------------------- */
   const onNewFile = useCallback(() => {
     const id = `file-${Date.now()}`;
     const file = {
@@ -119,20 +122,7 @@ const CodeEditor = () => {
     }, 0);
   }, []);
 
-  const handleShareCode = useCallback(() => {
-    const source = editorRef.current?.getValue();
-    if (!source) return;
-
-    const encoded = btoa(unescape(encodeURIComponent(source)));
-    const url = `${window.location.origin}/editor?code=${encoded}`;
-
-    navigator.clipboard.writeText(url);
-    alert("Shareable code link copied!");
-  }, []);
-
-  /* -------------------- CLOSE FILE -------------------- */
-  const onFileClose = useCallback(
-    (id) => {
+  const onFileClose = useCallback((id) => {
       setOpenFiles((prev) => {
         const remaining = prev.filter((f) => f.id !== id);
         if (remaining.length === 0) return prev;
@@ -154,11 +144,14 @@ const CodeEditor = () => {
   );
 
   return (
-    <div className={`h-screen flex flex-col overflow-hidden ${
+    <div className={`h-screen flex flex-col overflow-hidden relative ${
         theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
       }`}>
       
-      <TopBar />
+      <TopBar 
+        onShare={() => setIsShareModalOpen(true)} 
+        onCollaborate={() => setIsCollabPanelOpen(!isCollabPanelOpen)}
+      />
       
       <FileBar
         language={language}
@@ -169,7 +162,6 @@ const CodeEditor = () => {
         activeFileId={activeFileId}
         onFileSelect={onFileSelect}
         onLanguageSelect={onLanguageSelect}
-        onShare={handleShareCode}
         onFileClose={onFileClose}
         onNewFile={onNewFile}
         onVersionSelect={setVersion}
@@ -194,7 +186,17 @@ const CodeEditor = () => {
           onClose={() => setShowOutput(false)}
         />
         
+        <CollaborationPanel 
+          isOpen={isCollabPanelOpen} 
+          onClose={() => setIsCollabPanelOpen(false)} 
+        />
       </div>
+
+      <ShareModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        code={code}
+      />
 
       <CodeMate />
     </div>
