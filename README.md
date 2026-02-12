@@ -3,10 +3,10 @@
   <img alt="Tech_Compiler – Data Science Club" src="https://media.licdn.com/dms/image/v2/C4E22AQG47_CrAjrEBg/feedshare-shrink_800/feedshare-shrink_800/0/1645878629215?e=2147483647&t=zNxl5EEgTceK2X0XdLKTKwfFitE00GCuSwmSKT7FQRk&v=beta" height=300 width=1000 />
 </div>
 
-# 🚀 Tech_Compiler
+
 **Code Editor created for the community**
 
----
+
 
 ## 🌍 Open Source Program Association
 
@@ -16,7 +16,7 @@
 
 DSC WoC is a large-scale open-source initiative by **Google Developer Student Clubs (DSC)** that promotes open-source culture, mentorship, and real-world collaborative development.
 
----
+
 
 ## 🧠 Project Overview
 
@@ -24,7 +24,7 @@ DSC WoC is a large-scale open-source initiative by **Google Developer Student Cl
 
 It delivers a fast, interactive, and modern IDE-like experience without the need for local compiler setup.
 
----
+
 
 ## 💻 Code Editor & Compiler
 
@@ -35,7 +35,7 @@ Built with:
 - ⚡ Vite  
 - 🎨 Tailwind CSS  
 
----
+
 
 ## 🚀 Features
 
@@ -64,12 +64,12 @@ Built with:
 - 📦 Built-in code snippets  
 - 🔐 API-key based secure execution  
 
----
+
 
 ## 🛠️ Technologies Used
 
 | Category | Technology |
-|--------|-----------|
+|--|--|
 | Frontend | React 19.1.0 |
 | Build Tool | Vite 6.3.5 |
 | Styling | Tailwind CSS 3.4.17 |
@@ -79,7 +79,7 @@ Built with:
 | Language | JavaScript / JSX |
 | Package Manager | npm |
 
----
+
 
 ## 📋 Prerequisites
 
@@ -87,7 +87,7 @@ Built with:
 - npm or yarn
 - RapidAPI Judge0 CE API Key
 
----
+
 
 ## 📦 Installation
 
