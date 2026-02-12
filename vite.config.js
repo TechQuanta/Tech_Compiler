@@ -1,7 +1,10 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import monacoEditorPlugin from "vite-plugin-monaco-editor";
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-})
+  plugins: [
+    react(),
+    monacoEditorPlugin(),   // 🔥 THIS FIXES EVERYTHING
+  ],
+});
