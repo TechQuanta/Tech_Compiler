@@ -1,28 +1,44 @@
-// src/components/ChatBot/chatApi.js
-import Groq from "groq-sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Groq with your API key
-const groq = new Groq({
-  apiKey: import.meta.env.VITE_GROQ_API_KEY,
-  dangerouslyAllowBrowser: true, // required to call from frontend
-});
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// Set your model
-const MODEL_NAME = "llama-3.3-70b-versatile";
+const MODEL_NAME = "gemini-1.5-flash";
 
-// Function to send messages to Groq
 export async function askCodeMate(messages) {
   try {
-    const chat = await groq.chat.completions.create({
+    const systemParts = messages
+      .filter((msg) => msg.role === "system")
+      .map((msg) => msg.content);
+    
+    const systemInstruction = systemParts.join("\n\n");
+
+    const conversation = messages.filter((msg) => msg.role !== "system");
+    
+    const lastMessage = conversation.pop(); 
+
+    const history = conversation.map((msg) => ({
+      role: msg.role === "assistant" ? "model" : "user",
+      parts: [{ text: msg.content }],
+    }));
+
+    const model = genAI.getGenerativeModel({
       model: MODEL_NAME,
-      messages: messages,
-      temperature: 0.3, // Adjust creativity
+      systemInstruction: systemInstruction,
     });
 
-    // Return the assistant's reply
-    return chat.choices[0].message.content;
+    const chat = model.startChat({
+      history: history,
+      generationConfig: {
+        temperature: 0.3,
+      },
+    });
+
+    const result = await chat.sendMessage(lastMessage.content);
+    const response = await result.response;
+    
+    return response.text();
   } catch (err) {
-    console.error("Groq API Error:", err);
-    throw new Error("Error connecting to Groq API.");
+    console.error("Gemini API Error:", err);
+    throw new Error("Error connecting to Gemini API.");
   }
 }

@@ -74,7 +74,7 @@ Space Complexity: O(...)
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "⚠️ Error connecting to Groq API." },
+        { role: "assistant", content: "⚠️ Error connecting to Gemini API." },
       ]);
     }
   };
