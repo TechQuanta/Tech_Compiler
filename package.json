@@ -18,6 +18,7 @@
     "axios": "^1.9.0",
     "code-editor": "file:",
     "framer-motion": "^12.12.2",
+    "@google/generative-ai": "^0.21.0",
     "groq-sdk": "^0.37.0",
     "install": "^0.13.0",
     "npm": "^11.4.1",
