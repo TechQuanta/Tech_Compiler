@@ -49,6 +49,7 @@ const CollaborationPanel = ({
                 <div className={`p-4 rounded-full ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
                     <FiActivity size={32} className="text-blue-500" />
                 </div>
+
                 <div>
                     <h3 className="text-lg font-medium mb-2">Live Coding Session</h3>
                     <p className="text-sm text-gray-500 px-4">
@@ -65,14 +66,20 @@ const CollaborationPanel = ({
 
                 <div className="w-full pt-4 border-t border-gray-200 dark:border-[#333]">
                   <p className="text-sm text-gray-500 mb-2">Or join existing:</p>
+
                   <div className="flex gap-2">
                     <input 
                       type="text" 
                       placeholder="Session ID" 
                       value={joinInput}
                       onChange={(e) => setJoinInput(e.target.value)}
-                      className={`w-full px-3 py-2 rounded text-sm ${theme === 'dark' ? 'bg-[#252525] text-white border-[#444]' : 'bg-gray-100 border-gray-300'} border`}
+                      className={`w-full px-3 py-2 rounded text-sm ${
+                        theme === 'dark'
+                          ? 'bg-[#252525] text-white border-[#444]'
+                          : 'bg-gray-100 border-gray-300'
+                      } border`}
                     />
+
                     <button 
                       onClick={() => onJoinSession(joinInput)}
                       className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
@@ -84,10 +91,20 @@ const CollaborationPanel = ({
               </div>
             ) : (
               <div className="space-y-6">
-                <div className={`p-4 rounded-lg border ${theme === "dark" ? "bg-[#252525] border-gray-700" : "bg-gray-50 border-gray-200"}`}>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Session ID</label>
+                <div className={`p-4 rounded-lg border ${
+                  theme === "dark"
+                    ? "bg-[#252525] border-gray-700"
+                    : "bg-gray-50 border-gray-200"
+                }`}>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">
+                      Session ID
+                    </label>
+
                     <div className="flex items-center justify-between">
-                        <span className="font-mono text-xl font-bold tracking-widest text-blue-500">{sessionId}</span>
+                        <span className="font-mono text-xl font-bold tracking-widest text-blue-500">
+                          {sessionId}
+                        </span>
+
                         <span className="flex items-center gap-1.5 text-xs text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"/>
                             Live
@@ -97,40 +114,44 @@ const CollaborationPanel = ({
 
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Active Users ({participants.length || 1})</label>
-                        <button onClick={handleCopyLink} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Active Users ({participants.length || 1})
+                        </label>
+
+                        <button
+                          onClick={handleCopyLink}
+                          className="text-xs text-blue-500 hover:underline flex items-center gap-1"
+                        >
                             <FiUserPlus size={12}/> Copy Invite Link
                         </button>
                     </div>
                     
                     <div className="space-y-2">
                         {participants.length > 0 ? participants.map((user, i) => (
-                           <div key={i} className={`flex items-center gap-3 p-2 rounded-md ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-gray-100"}`}>
+                           <div key={i} className={`flex items-center gap-3 p-2 rounded-md ${
+                             theme === "dark" ? "hover:bg-white/5" : "hover:bg-gray-100"
+                           }`}>
                               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-xs text-white font-bold">
                                   {user.name.substring(0, 2).toUpperCase()}
                               </div>
+
                               <div className="flex-1">
-                                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                                  <p className="text-sm font-medium leading-none">
+                                    {user.name}
+                                  </p>
                               </div>
+
                               <FiCircle size={8} className="text-green-500 fill-current" />
                           </div>
                         )) : (
                           <>
-                            <div className={`flex items-center gap-3 p-2 rounded-md ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-gray-100"}`}>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-xs text-white font-bold">
-                                    YO
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium leading-none">You</p>
-                                    <p className="text-xs text-gray-500 mt-1">Host</p>
-                                </div>
-                                <FiCircle size={8} className="text-green-500 fill-current" />
-                            </div>
-                            <div className={`flex items-center gap-3 p-2 rounded-md opacity-50`}>
+                            <div className="flex items-center gap-3 p-2 rounded-md opacity-50">
                                 <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white">
                                     +
                                 </div>
-                                <p className="text-sm text-gray-500 italic">Waiting for others...</p>
+                                <p className="text-sm text-gray-500 italic">
+                                  Waiting for others...
+                                </p>
                             </div>
                           </>
                         )}
