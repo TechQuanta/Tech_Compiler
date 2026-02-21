@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { io } from "socket.io-client";
 import TopBar from "../components/TopBar";
 import FileBar from "../components/FileBar";
 import Output from "../components/Output";
@@ -11,22 +12,21 @@ import { CODE_SNIPPETS } from "../utils/constant";
 import useKeyPress from "../hooks/keyPress";
 import { useTheme } from "../context/ThemeContext";
 
+const SOCKET_SERVER_URL = "http://localhost:5000";
+
 const CodeEditor = () => {
   const editorRef = useRef(null);
+  const socketRef = useRef(null);
   const { theme } = useTheme();
-  
+  const [sessionId, setSessionId] = useState("");
+  const [participants, setParticipants] = useState([]);
+  const [isSessionActive, setIsSessionActive] = useState(false);
   const [openFiles, setOpenFiles] = useState([
-    {
-      id: "file1",
-      name: "main.js",
-      content: CODE_SNIPPETS.javascript,
-      language: "javascript",
-    },
+    { id: "file1", name: "main.js", content: CODE_SNIPPETS.javascript, language: "javascript" },
   ]);
   const [activeFileId, setActiveFileId] = useState("file1");
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState(CODE_SNIPPETS.javascript);
-  const [version, setVersion] = useState("");
   const [showOutput, setShowOutput] = useState(false);
   const [output, setOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +38,35 @@ const CodeEditor = () => {
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
   
+  useEffect(() => {
+    socketRef.current = io(SOCKET_SERVER_URL, { autoConnect: false });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinId = urlParams.get('session');
+    
+    if (joinId) {
+      joinSession(joinId);
+      setIsCollabPanelOpen(true);
+    }
+
+    socketRef.current.on("code-update", (newCode) => {
+      if (newCode !== code) {
+        setCode(newCode);
+        setOpenFiles((prev) =>
+          prev.map((f) => (f.id === activeFileId ? { ...f, content: newCode } : f))
+        );
+      }
+    });
+
+    socketRef.current.on("participants-update", (users) => {
+      setParticipants(users);
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [activeFileId]);
+
   const onMount = useCallback((editor) => {
     editorRef.current = editor;
     editor.focus();
@@ -48,7 +77,42 @@ const CodeEditor = () => {
     setOpenFiles((prev) =>
       prev.map((f) => (f.id === activeFileId ? { ...f, content: newCode } : f))
     );
-  }, [activeFileId]);
+    if (isSessionActive && socketRef.current) {
+      socketRef.current.emit("code-change", { sessionId, newCode });
+    }
+  }, [activeFileId, isSessionActive, sessionId]);
+
+  const startSession = useCallback(() => {
+    const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    socketRef.current.connect();
+    socketRef.current.emit("create-session", newSessionId, () => {
+      setSessionId(newSessionId);
+      setIsSessionActive(true);
+      window.history.pushState({}, '', `?session=${newSessionId}`);
+    });
+  }, []);
+
+  const joinSession = useCallback((id) => {
+    socketRef.current.connect();
+    socketRef.current.emit("join-session", id, (success, currentCode) => {
+      if (success) {
+        setSessionId(id);
+        setIsSessionActive(true);
+        if (currentCode) setCode(currentCode);
+      } else {
+        alert("Session not found or full.");
+      }
+    });
+  }, []);
+
+  const endSession = useCallback(() => {
+    socketRef.current.emit("leave-session", sessionId);
+    socketRef.current.disconnect();
+    setIsSessionActive(false);
+    setSessionId("");
+    setParticipants([]);
+    window.history.pushState({}, '', window.location.pathname);
+  }, [sessionId]);
 
   const runCode = useCallback(async () => {
     const source = editorRef.current?.getValue();
@@ -188,16 +252,17 @@ const CodeEditor = () => {
         
         <CollaborationPanel 
           isOpen={isCollabPanelOpen} 
-          onClose={() => setIsCollabPanelOpen(false)} 
+          onClose={() => setIsCollabPanelOpen(false)}
+          isSessionActive={isSessionActive}
+          sessionId={sessionId}
+          participants={participants}
+          onStartSession={startSession}
+          onEndSession={endSession}
+          onJoinSession={joinSession}
         />
       </div>
 
-      <ShareModal 
-        isOpen={isShareModalOpen} 
-        onClose={() => setIsShareModalOpen(false)} 
-        code={code}
-      />
-
+      <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} code={code}/>
       <CodeMate />
     </div>
   );

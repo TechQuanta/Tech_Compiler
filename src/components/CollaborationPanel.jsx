@@ -3,24 +3,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiUsers, FiX, FiActivity, FiUserPlus, FiCircle } from "react-icons/fi";
 import { useTheme } from "../context/ThemeContext";
 
-const CollaborationPanel = ({ isOpen, onClose }) => {
+const CollaborationPanel = ({ 
+  isOpen, 
+  onClose, 
+  isSessionActive, 
+  sessionId, 
+  participants, 
+  onStartSession, 
+  onEndSession,
+  onJoinSession
+}) => {
   const { theme } = useTheme();
-  const [isSessionActive, setIsSessionActive] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [sessionId, setSessionId] = useState("");
+  const [joinInput, setJoinInput] = useState("");
 
-  const startSession = () => {
-    setIsConnecting(true);
-    setTimeout(() => {
-      setSessionId(Math.random().toString(36).substring(2, 8).toUpperCase());
-      setIsSessionActive(true);
-      setIsConnecting(false);
-    }, 1500);
-  };
-
-  const endSession = () => {
-    setIsSessionActive(false);
-    setSessionId("");
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Invite link copied to clipboard!");
   };
 
   return (
@@ -57,16 +55,32 @@ const CollaborationPanel = ({ isOpen, onClose }) => {
                         Start a session to code with others in real-time.
                     </p>
                 </div>
+                
                 <button
-                    onClick={startSession}
-                    disabled={isConnecting}
-                    className={`w-full py-2.5 rounded-lg font-medium text-sm text-white shadow-lg transition-all active:scale-95
-                        ${isConnecting 
-                            ? "bg-gray-500 cursor-wait" 
-                            : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"}`}
+                    onClick={onStartSession}
+                    className="w-full py-2.5 rounded-lg font-medium text-sm text-white shadow-lg transition-all active:scale-95 bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
                 >
-                    {isConnecting ? "Establishing Connection..." : "Start New Session"}
+                    Start New Session
                 </button>
+
+                <div className="w-full pt-4 border-t border-gray-200 dark:border-[#333]">
+                  <p className="text-sm text-gray-500 mb-2">Or join existing:</p>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="Session ID" 
+                      value={joinInput}
+                      onChange={(e) => setJoinInput(e.target.value)}
+                      className={`w-full px-3 py-2 rounded text-sm ${theme === 'dark' ? 'bg-[#252525] text-white border-[#444]' : 'bg-gray-100 border-gray-300'} border`}
+                    />
+                    <button 
+                      onClick={() => onJoinSession(joinInput)}
+                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      Join
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-6">
@@ -83,34 +97,48 @@ const CollaborationPanel = ({ isOpen, onClose }) => {
 
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Active Users (1)</label>
-                        <button className="text-xs text-blue-500 hover:underline flex items-center gap-1">
-                            <FiUserPlus size={12}/> Invite
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Active Users ({participants.length || 1})</label>
+                        <button onClick={handleCopyLink} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                            <FiUserPlus size={12}/> Copy Invite Link
                         </button>
                     </div>
                     
                     <div className="space-y-2">
-                        <div className={`flex items-center gap-3 p-2 rounded-md ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-gray-100"}`}>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-xs text-white font-bold">
-                                YO
+                        {participants.length > 0 ? participants.map((user, i) => (
+                           <div key={i} className={`flex items-center gap-3 p-2 rounded-md ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-gray-100"}`}>
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-xs text-white font-bold">
+                                  {user.name.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div className="flex-1">
+                                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                              </div>
+                              <FiCircle size={8} className="text-green-500 fill-current" />
+                          </div>
+                        )) : (
+                          <>
+                            <div className={`flex items-center gap-3 p-2 rounded-md ${theme === "dark" ? "hover:bg-white/5" : "hover:bg-gray-100"}`}>
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-xs text-white font-bold">
+                                    YO
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium leading-none">You</p>
+                                    <p className="text-xs text-gray-500 mt-1">Host</p>
+                                </div>
+                                <FiCircle size={8} className="text-green-500 fill-current" />
                             </div>
-                            <div className="flex-1">
-                                <p className="text-sm font-medium leading-none">You</p>
-                                <p className="text-xs text-gray-500 mt-1">Host • Writing code...</p>
+                            <div className={`flex items-center gap-3 p-2 rounded-md opacity-50`}>
+                                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white">
+                                    +
+                                </div>
+                                <p className="text-sm text-gray-500 italic">Waiting for others...</p>
                             </div>
-                            <FiCircle size={8} className="text-green-500 fill-current" />
-                        </div>
-                        <div className={`flex items-center gap-3 p-2 rounded-md opacity-50`}>
-                            <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white">
-                                +
-                            </div>
-                            <p className="text-sm text-gray-500 italic">Waiting for others...</p>
-                        </div>
+                          </>
+                        )}
                     </div>
                 </div>
 
                 <button 
-                    onClick={endSession}
+                    onClick={onEndSession}
                     className="w-full mt-4 py-2 text-xs font-medium text-red-500 hover:bg-red-500/10 border border-red-500/20 rounded-lg transition-colors"
                 >
                     End Session
