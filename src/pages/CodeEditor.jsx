@@ -285,12 +285,13 @@ const CodeEditor = () => {
       />
 
       <div className="flex-grow flex flex-col relative overflow-hidden">
-        <CodeEditorWindow
-          code={code}
-          onChange={onCodeChange}
-          language={language}
-          onMount={onMount}
-        />
+       <CodeEditorWindow
+            code={code}
+            onChange={onCodeChange}
+            language={language}
+            onMount={onMount}
+            activeFileId={activeFileId}  
+          />
 
         <Output
           output={output}
