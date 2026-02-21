@@ -17,43 +17,62 @@ const SOCKET_SERVER_URL = "http://localhost:5000";
 const CodeEditor = () => {
   const editorRef = useRef(null);
   const socketRef = useRef(null);
+
+  const codeRef = useRef("");
+  const activeFileRef = useRef("");
+
   const { theme } = useTheme();
+
   const [sessionId, setSessionId] = useState("");
   const [participants, setParticipants] = useState([]);
   const [isSessionActive, setIsSessionActive] = useState(false);
+
   const [openFiles, setOpenFiles] = useState([
     { id: "file1", name: "main.js", content: CODE_SNIPPETS.javascript, language: "javascript" },
   ]);
+
   const [activeFileId, setActiveFileId] = useState("file1");
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState(CODE_SNIPPETS.javascript);
+
+  const [version, setVersion] = useState("");   // ✅ FIXED
+
   const [showOutput, setShowOutput] = useState(false);
   const [output, setOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCollabPanelOpen, setIsCollabPanelOpen] = useState(false);
 
   /* -------------------- SHORTCUTS -------------------- */
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
-  
+
+  /* -------------------- LIVE REFS -------------------- */
+  useEffect(() => { codeRef.current = code; }, [code]);
+  useEffect(() => { activeFileRef.current = activeFileId; }, [activeFileId]);
+
+  /* -------------------- SOCKET INIT (ONCE) -------------------- */
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER_URL, { autoConnect: false });
 
     const urlParams = new URLSearchParams(window.location.search);
-    const joinId = urlParams.get('session');
-    
+    const joinId = urlParams.get("session");
+
     if (joinId) {
       joinSession(joinId);
       setIsCollabPanelOpen(true);
     }
 
     socketRef.current.on("code-update", (newCode) => {
-      if (newCode !== code) {
+      if (newCode !== codeRef.current) {
         setCode(newCode);
+
         setOpenFiles((prev) =>
-          prev.map((f) => (f.id === activeFileId ? { ...f, content: newCode } : f))
+          prev.map((f) =>
+            f.id === activeFileRef.current ? { ...f, content: newCode } : f
+          )
         );
       }
     });
@@ -65,8 +84,9 @@ const CodeEditor = () => {
     return () => {
       socketRef.current.disconnect();
     };
-  }, [activeFileId]);
+  }, []);
 
+  /* -------------------- EDITOR -------------------- */
   const onMount = useCallback((editor) => {
     editorRef.current = editor;
     editor.focus();
@@ -74,53 +94,90 @@ const CodeEditor = () => {
 
   const onCodeChange = useCallback((newCode) => {
     setCode(newCode);
+
     setOpenFiles((prev) =>
-      prev.map((f) => (f.id === activeFileId ? { ...f, content: newCode } : f))
+      prev.map((f) =>
+        f.id === activeFileId ? { ...f, content: newCode } : f
+      )
     );
+
     if (isSessionActive && socketRef.current) {
       socketRef.current.emit("code-change", { sessionId, newCode });
     }
   }, [activeFileId, isSessionActive, sessionId]);
 
+  /* -------------------- SESSION -------------------- */
+  const ensureConnection = () => {
+    if (!socketRef.current.connected) {
+      socketRef.current.connect();
+    }
+  };
+
   const startSession = useCallback(() => {
+    if (isSessionActive) return;   // ✅ Guard
+
     const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    socketRef.current.connect();
+
+    ensureConnection();
+
     socketRef.current.emit("create-session", newSessionId, () => {
       setSessionId(newSessionId);
       setIsSessionActive(true);
-      window.history.pushState({}, '', `?session=${newSessionId}`);
+
+      window.history.pushState({}, "", `?session=${newSessionId}`);
     });
-  }, []);
+  }, [isSessionActive]);
 
   const joinSession = useCallback((id) => {
-    socketRef.current.connect();
-    socketRef.current.emit("join-session", id, (success, currentCode) => {
+    if (!id) return;
+
+    const cleanId = id.trim().toUpperCase();
+
+    ensureConnection();
+
+    socketRef.current.emit("join-session", cleanId, (success, currentCode) => {
       if (success) {
-        setSessionId(id);
+        setSessionId(cleanId);
         setIsSessionActive(true);
-        if (currentCode) setCode(currentCode);
+
+        if (currentCode) {
+          setCode(currentCode);
+
+          setOpenFiles((prev) =>
+            prev.map((f) =>
+              f.id === activeFileId ? { ...f, content: currentCode } : f
+            )
+          );
+
+          editorRef.current?.setValue(currentCode);
+        }
       } else {
         alert("Session not found or full.");
       }
     });
-  }, []);
+  }, [activeFileId]);
 
   const endSession = useCallback(() => {
+    if (!sessionId) return;
+
     socketRef.current.emit("leave-session", sessionId);
     socketRef.current.disconnect();
+
     setIsSessionActive(false);
     setSessionId("");
     setParticipants([]);
-    window.history.pushState({}, '', window.location.pathname);
+
+    window.history.pushState({}, "", window.location.pathname);
   }, [sessionId]);
 
+  /* -------------------- RUN CODE -------------------- */
   const runCode = useCallback(async () => {
     const source = editorRef.current?.getValue();
     if (!source) return;
 
     setShowOutput(true);
     setIsLoading(true);
-    
+
     try {
       const { run } = await executeCode(language, source);
       setOutput(run || {});
@@ -137,41 +194,41 @@ const CodeEditor = () => {
     if (ctrlPress && enterPress) runCode();
   }, [ctrlPress, enterPress, runCode]);
 
+  /* -------------------- FILE MANAGEMENT -------------------- */
   const onFileSelect = (id) => {
     const file = openFiles.find((f) => f.id === id);
-    if(file) {
-        setActiveFileId(id);
-        setLanguage(file.language);
-        setCode(file.content);
-        editorRef.current?.setValue(file.content);
-    }
+    if (!file) return;
+
+    setActiveFileId(id);
+    setLanguage(file.language);
+    setCode(file.content);
+
+    editorRef.current?.setValue(file.content);
   };
 
   const onLanguageSelect = useCallback((newLanguage) => {
-      setLanguage(newLanguage);
-      const snippet = CODE_SNIPPETS[newLanguage] || "";
+    const snippet = CODE_SNIPPETS[newLanguage] || "";
 
-      setCode(snippet);
-      setOpenFiles((prev) =>
-        prev.map((f) =>
-          f.id === activeFileId
-            ? { ...f, language: newLanguage, content: snippet }
-            : f
-        )
-      );
+    setLanguage(newLanguage);
+    setCode(snippet);
 
-      setTimeout(() => {
-        editorRef.current?.setValue(snippet);
-      }, 0);
-    },
-    [activeFileId]
-  );
+    setOpenFiles((prev) =>
+      prev.map((f) =>
+        f.id === activeFileId
+          ? { ...f, language: newLanguage, content: snippet }
+          : f
+      )
+    );
+
+    editorRef.current?.setValue(snippet);
+  }, [activeFileId]);
 
   const onNewFile = useCallback(() => {
     const id = `file-${Date.now()}`;
+
     const file = {
       id,
-      name: `untitled.js`,
+      name: "untitled.js",
       content: "",
       language: "javascript",
     };
@@ -181,42 +238,38 @@ const CodeEditor = () => {
     setLanguage("javascript");
     setCode("");
 
-    setTimeout(() => {
-      editorRef.current?.setValue("");
-    }, 0);
+    editorRef.current?.setValue("");
   }, []);
 
   const onFileClose = useCallback((id) => {
-      setOpenFiles((prev) => {
-        const remaining = prev.filter((f) => f.id !== id);
-        if (remaining.length === 0) return prev;
+    setOpenFiles((prev) => {
+      const remaining = prev.filter((f) => f.id !== id);
+      if (remaining.length === 0) return prev;
 
-        if (id === activeFileId) {
-          const next = remaining[0];
-          setActiveFileId(next.id);
-          setLanguage(next.language);
-          setCode(next.content);
+      if (id === activeFileId) {
+        const next = remaining[0];
 
-          setTimeout(() => {
-            editorRef.current?.setValue(next.content);
-          }, 0);
-        }
-        return remaining;
-      });
-    },
-    [activeFileId]
-  );
+        setActiveFileId(next.id);
+        setLanguage(next.language);
+        setCode(next.content);
+
+        editorRef.current?.setValue(next.content);
+      }
+
+      return remaining;
+    });
+  }, [activeFileId]);
 
   return (
     <div className={`h-screen flex flex-col overflow-hidden relative ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}>
+      theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+    }`}>
       
-      <TopBar 
-        onShare={() => setIsShareModalOpen(true)} 
+      <TopBar
+        onShare={() => setIsShareModalOpen(true)}
         onCollaborate={() => setIsCollabPanelOpen(!isCollabPanelOpen)}
       />
-      
+
       <FileBar
         language={language}
         setLanguage={setLanguage}
@@ -232,15 +285,12 @@ const CodeEditor = () => {
       />
 
       <div className="flex-grow flex flex-col relative overflow-hidden">
-        <div className={`flex-grow transition-all duration-300 ease-in-out ${showOutput ? 'h-[65%]' : 'h-full'}`}>
-           <CodeEditorWindow
-             code={code}
-             onChange={onCodeChange}
-             language={language}
-             onMount={onMount}
-             activeFileId={activeFileId}
-           />
-        </div>
+        <CodeEditorWindow
+          code={code}
+          onChange={onCodeChange}
+          language={language}
+          onMount={onMount}
+        />
 
         <Output
           output={output}
@@ -249,9 +299,9 @@ const CodeEditor = () => {
           isLoading={isLoading}
           onClose={() => setShowOutput(false)}
         />
-        
-        <CollaborationPanel 
-          isOpen={isCollabPanelOpen} 
+
+        <CollaborationPanel
+          isOpen={isCollabPanelOpen}
           onClose={() => setIsCollabPanelOpen(false)}
           isSessionActive={isSessionActive}
           sessionId={sessionId}
@@ -262,7 +312,12 @@ const CodeEditor = () => {
         />
       </div>
 
-      <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} code={code}/>
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        code={code}
+      />
+
       <CodeMate />
     </div>
   );
