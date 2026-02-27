@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-const MODEL_NAME = "gemini-1.5-flash";
+const MODEL_NAME = "gemini-2.0-flash";
 
 export async function askCodeMate(messages) {
   try {
@@ -20,6 +20,10 @@ export async function askCodeMate(messages) {
       role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
+
+    while (history.length > 0 && history[0].role === "model") {
+      history.shift();
+    }
 
     const model = genAI.getGenerativeModel({
       model: MODEL_NAME,
